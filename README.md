@@ -1,6 +1,6 @@
-# Depict Preview
+# Screenflow
 
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/fastfollow.depict-preview?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=fastfollow.depict-preview)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/fastfollow.screenflow?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=fastfollow.screenflow)
 
 A VS Code extension that renders visual wireframe previews from simple text-based screen definitions. Perfect for rapidly documenting and visualizing application screens, user flows, and UI specifications.
 
@@ -165,12 +165,12 @@ The auto-organize feature groups screens intelligently:
 
 The extension activates for:
 - Files named `screens.txt`
-- Files with `.depict` extension
+- Files with `.screenflow` extension
 
 ## Usage
 
-1. Create a `.depict` file or `screens.txt`
-2. Click the preview icon in the editor title bar, or run "Show Depict Preview" from the command palette
+1. Create a `.screenflow` file or `screens.txt`
+2. Click the preview icon in the editor title bar, or run "Show Screenflow Preview" from the command palette
 3. Write your screen definitions
 4. Arrange cards as needed - positions are saved automatically
 
@@ -218,19 +218,19 @@ Order Confirmation (modal)
 
 1. Open VS Code
 2. Go to Extensions (Cmd/Ctrl + Shift + X)
-3. Search for "Depict Page Preview"
+3. Search for "Screenflow"
 4. Click Install
 
 Or install via command line:
 ```bash
-code --install-extension fastfollow.depict-preview
+code --install-extension fastfollow.screenflow
 ```
 
 ### Development
 
 ```bash
-git clone https://github.com/fastfollowsoftware/depict-preview.git
-cd depict-preview
+git clone https://github.com/fastfollowsoftware/screenflow.git
+cd screenflow
 npm install
 npm run compile
 ```

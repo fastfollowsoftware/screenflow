@@ -3,7 +3,7 @@ import { parse } from '../parser/parser';
 import { renderAST } from '../renderer/htmlRenderer';
 import { AST, CanvasState } from '../parser/types';
 
-const CANVAS_STATE_KEY = 'depict.canvasState';
+const CANVAS_STATE_KEY = 'screenflow.canvasState';
 
 interface CanvasStateMessage {
   type: 'updatePosition' | 'updateCanvasState' | 'navigateToPlace' | 'batchUpdatePositions';
@@ -16,7 +16,7 @@ interface CanvasStateMessage {
   positions?: Array<{ placeName: string; x: number; y: number }>;
 }
 
-export class DepictPreviewProvider {
+export class ScreenflowPreviewProvider {
   private panel: vscode.WebviewPanel | undefined;
   private disposables: vscode.Disposable[] = [];
   private document: vscode.TextDocument | undefined;
@@ -42,8 +42,8 @@ export class DepictPreviewProvider {
       this.panel.reveal(vscode.ViewColumn.Beside);
     } else {
       this.panel = vscode.window.createWebviewPanel(
-        'depictPreview',
-        'Depict Preview',
+        'screenflowPreview',
+        'Screenflow Preview',
         vscode.ViewColumn.Beside,
         {
           enableScripts: true,

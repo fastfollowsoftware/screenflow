@@ -1,12 +1,12 @@
 {
-  "name": "depict-preview",
-  "displayName": "Depict Page Preview",
-  "description": "Visual wireframe preview for depict.page syntax files",
+  "name": "screenflow",
+  "displayName": "Screenflow",
+  "description": "Visual wireframe preview for text-based screen definitions",
   "version": "0.1.0",
   "publisher": "fastfollow",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fastfollowsoftware/depict-preview"
+    "url": "https://github.com/fastfollowsoftware/screenflow"
   },
   "engines": {
     "vscode": "^1.85.0"
@@ -20,29 +20,29 @@
   "contributes": {
     "commands": [
       {
-        "command": "depict.showPreview",
-        "title": "Show Depict Preview",
+        "command": "screenflow.showPreview",
+        "title": "Show Screenflow Preview",
         "icon": "$(preview)"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "when": "resourceFilename == screens.txt || resourceExtname == .depict",
-          "command": "depict.showPreview",
+          "when": "resourceFilename == screens.txt || resourceExtname == .screenflow",
+          "command": "screenflow.showPreview",
           "group": "navigation"
         }
       ]
     },
     "languages": [
       {
-        "id": "depict",
+        "id": "screenflow",
         "extensions": [
-          ".depict"
+          ".screenflow"
         ],
         "aliases": [
-          "Depict",
-          "depict"
+          "Screenflow",
+          "screenflow"
         ]
       }
     ]

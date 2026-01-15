@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
-import { DepictPreviewProvider } from './webview/previewProvider';
+import { ScreenflowPreviewProvider } from './webview/previewProvider';
 
-let previewProvider: DepictPreviewProvider | undefined;
+let previewProvider: ScreenflowPreviewProvider | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-  previewProvider = new DepictPreviewProvider(context);
+  previewProvider = new ScreenflowPreviewProvider(context);
 
   // Register command
   const showPreviewCommand = vscode.commands.registerCommand(
-    'depict.showPreview',
+    'screenflow.showPreview',
     () => {
       const editor = vscode.window.activeTextEditor;
       if (editor) {
