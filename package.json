@@ -1,0 +1,56 @@
+{
+  "name": "depict-preview",
+  "displayName": "Depict Page Preview",
+  "description": "Visual wireframe preview for depict.page syntax files",
+  "version": "0.1.0",
+  "publisher": "fastfollow",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "depict.showPreview",
+        "title": "Show Depict Preview",
+        "icon": "$(preview)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "resourceFilename == screens.txt || resourceExtname == .depict",
+          "command": "depict.showPreview",
+          "group": "navigation"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "depict",
+        "extensions": [
+          ".depict"
+        ],
+        "aliases": [
+          "Depict",
+          "depict"
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  }
+}
