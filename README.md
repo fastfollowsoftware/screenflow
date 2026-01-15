@@ -1,5 +1,7 @@
 # Depict Preview
 
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/fastfollow.depict-preview?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=fastfollow.depict-preview)
+
 A VS Code extension that renders visual wireframe previews from simple text-based screen definitions. Perfect for rapidly documenting and visualizing application screens, user flows, and UI specifications.
 
 ![Preview Example](example.png)
@@ -212,16 +214,22 @@ Order Confirmation (modal)
 
 ## Installation
 
-### From VSIX
+### From VS Code Marketplace
 
+1. Open VS Code
+2. Go to Extensions (Cmd/Ctrl + Shift + X)
+3. Search for "Depict Page Preview"
+4. Click Install
+
+Or install via command line:
 ```bash
-code --install-extension depict-preview-0.1.0.vsix
+code --install-extension fastfollow.depict-preview
 ```
 
 ### Development
 
 ```bash
-git clone <repo>
+git clone https://github.com/fastfollowsoftware/depict-preview.git
 cd depict-preview
 npm install
 npm run compile
