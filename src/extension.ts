@@ -4,7 +4,7 @@ import { DepictPreviewProvider } from './webview/previewProvider';
 let previewProvider: DepictPreviewProvider | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-  previewProvider = new DepictPreviewProvider();
+  previewProvider = new DepictPreviewProvider(context);
 
   // Register command
   const showPreviewCommand = vscode.commands.registerCommand(

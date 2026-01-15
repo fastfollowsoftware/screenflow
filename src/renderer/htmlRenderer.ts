@@ -1,5 +1,19 @@
-import { AST, Place, Item } from '../parser/types';
+import { AST, Place, Item, CanvasState, Position, CommentType } from '../parser/types';
 import { getStyles, getScript } from './styles';
+
+const COMMENT_ICONS: Record<CommentType, string> = {
+  question: '?',
+  warning: '!',
+  info: 'i',
+  note: '💬',
+};
+
+const CARD_WIDTH = 320;
+const CARD_HEIGHT = 250; // Approximate height
+const CARD_GAP = 30;
+const COLUMNS = 5;
+const START_X = 40;
+const START_Y = 40;
 
 function escapeHtml(text: string): string {
   return text
@@ -17,7 +31,18 @@ function slugify(text: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-export function renderAST(ast: AST): string {
+function getDefaultPosition(index: number): Position {
+  const col = index % COLUMNS;
+  const row = Math.floor(index / COLUMNS);
+  return {
+    x: START_X + col * (CARD_WIDTH + CARD_GAP),
+    y: START_Y + row * (CARD_HEIGHT + CARD_GAP),
+  };
+}
+
+export function renderAST(ast: AST, canvasState?: CanvasState): string {
+  const positions = canvasState?.positions || {};
+
   return `
     <!DOCTYPE html>
     <html>
@@ -28,22 +53,27 @@ export function renderAST(ast: AST): string {
     </head>
     <body>
       <div class="container">
-        <nav class="sidebar">
-          <h2>Screens (${ast.places.length})</h2>
-          <ul class="place-list">
-            ${ast.places
-              .map(
-                (p) => `
-              <li class="place-nav-item" data-place="${escapeHtml(p.name)}">
-                ${p.isModal ? '&#128466;' : '&#128196;'} ${escapeHtml(p.name)}
-              </li>
-            `
-              )
-              .join('')}
-          </ul>
-        </nav>
         <main class="preview-area">
-          ${ast.places.map((p) => renderPlace(p)).join('')}
+          <div class="canvas">
+            <svg class="arrows-layer" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="#999" />
+                </marker>
+              </defs>
+            </svg>
+            ${ast.places.map((p, i) => renderPlace(p, positions[p.name] || getDefaultPosition(i))).join('')}
+          </div>
+          <div class="zoom-controls">
+            <button class="zoom-btn toggle-arrows active" title="Toggle Arrows">&#8594;</button>
+            <span class="zoom-separator">|</span>
+            <button class="zoom-btn zoom-out" title="Zoom Out">-</button>
+            <span class="zoom-level">100%</span>
+            <button class="zoom-btn zoom-in" title="Zoom In">+</button>
+            <button class="zoom-reset" title="Reset View">Reset</button>
+            <span class="zoom-separator">|</span>
+            <button class="zoom-btn auto-organize" title="Auto-Organize">&#8862;</button>
+          </div>
         </main>
       </div>
       <script>${getScript()}</script>
@@ -52,25 +82,39 @@ export function renderAST(ast: AST): string {
   `;
 }
 
-function renderPlace(place: Place): string {
+function renderPlace(place: Place, position: Position): string {
   const modalClass = place.isModal ? 'modal' : '';
+  const headerComment = place.comment && place.commentType
+    ? renderComment(place.comment, place.commentType)
+    : '';
 
   return `
     <section class="place ${modalClass}"
              id="place-${slugify(place.name)}"
-             data-place-name="${escapeHtml(place.name)}">
+             data-place-name="${escapeHtml(place.name)}"
+             style="left: ${position.x}px; top: ${position.y}px;">
       <header class="place-header">
         <h1>${escapeHtml(place.name)}</h1>
-        <span class="line-number">Line ${place.line + 1}</span>
+        ${headerComment}
       </header>
       <div class="place-content ${place.isModal ? 'modal-content' : ''}">
-        ${place.items.map((item) => renderItem(item)).join('')}
+        ${place.items.map((item) => renderItem(item, place.name)).join('')}
       </div>
     </section>
   `;
 }
 
-function renderItem(item: Item): string {
+function renderComment(comment: string, commentType: CommentType): string {
+  const icon = COMMENT_ICONS[commentType];
+  return `
+    <span class="comment-icon comment-${commentType}" title="${escapeHtml(comment)}">
+      <span class="comment-icon-text">${icon}</span>
+      <span class="comment-popover">${escapeHtml(comment)}</span>
+    </span>
+  `;
+}
+
+function renderItem(item: Item, sourcePlaceName: string): string {
   let content = '';
 
   // Handle conditional items
@@ -91,10 +135,9 @@ function renderItem(item: Item): string {
 
     case 'button':
       content += `
-        <button class="button-preview ${item.navigation ? 'has-nav' : ''}"
-                ${item.navigation ? `data-nav="${escapeHtml(item.navigation)}"` : ''}>
+        <button class="button-preview ${item.navigation ? 'has-nav nav-source' : ''}"
+                ${item.navigation ? `data-nav="${escapeHtml(item.navigation)}" data-source-place="${escapeHtml(sourcePlaceName)}"` : ''}>
           ${escapeHtml(item.label)}
-          ${item.navigation ? `<span class="nav-indicator">&#8594;</span>` : ''}
         </button>
       `;
       break;
@@ -131,8 +174,8 @@ function renderItem(item: Item): string {
     default:
       if (item.navigation) {
         content += `
-          <a class="link-preview" data-nav="${escapeHtml(item.navigation)}">
-            ${escapeHtml(item.label)} &#8594;
+          <a class="link-preview nav-source" data-nav="${escapeHtml(item.navigation)}" data-source-place="${escapeHtml(sourcePlaceName)}">
+            ${escapeHtml(item.label)}
           </a>
         `;
       } else {
@@ -140,33 +183,42 @@ function renderItem(item: Item): string {
       }
   }
 
-  // Handle multiplicity
-  let multipliedContent = content;
-  if (item.multiplicity && item.multiplicity > 1) {
-    const repeatCount = Math.min(item.multiplicity, 3);
-    multipliedContent = `
-      <div class="multiplicity-container">
-        <span class="multiplicity-badge">&times;${item.multiplicity}</span>
-        ${Array(repeatCount).fill(content).join('')}
-        ${item.multiplicity > 3 ? '<span class="multiplicity-more">...</span>' : ''}
-      </div>
-    `;
-  }
-
   // Render children
   const childrenHtml =
     item.children.length > 0
       ? `
     <div class="item-children">
-      ${item.children.map((child) => renderItem(child)).join('')}
+      ${item.children.map((child) => renderItem(child, sourcePlaceName)).join('')}
     </div>
   `
       : '';
 
+  // Add comment if present
+  const commentHtml = item.comment && item.commentType
+    ? renderComment(item.comment, item.commentType)
+    : '';
+
+  // Handle multiplicity - children go under first instance only
+  let mainContent;
+  if (item.multiplicity && item.multiplicity > 1) {
+    const repeatCount = Math.min(item.multiplicity, 3);
+    const firstInstance = `<div class="item-inline">${content}${commentHtml}</div>${childrenHtml}`;
+    const additionalInstances = Array(repeatCount - 1).fill(`<div class="item-inline">${content}</div>`).join('');
+    mainContent = `
+      <div class="multiplicity-container">
+        <span class="multiplicity-badge">&times;${item.multiplicity}</span>
+        ${firstInstance}
+        ${additionalInstances}
+        ${item.multiplicity > 3 ? '<span class="multiplicity-more">...</span>' : ''}
+      </div>
+    `;
+  } else {
+    mainContent = `<div class="item-inline">${content}${commentHtml}</div>${childrenHtml}`;
+  }
+
   return `
     <div class="item item-${item.itemType}" data-line="${item.line}">
-      ${multipliedContent}
-      ${childrenHtml}
+      ${mainContent}
     </div>
   `;
 }

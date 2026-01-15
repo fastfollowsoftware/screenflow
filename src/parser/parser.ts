@@ -1,10 +1,11 @@
 import { tokenize } from './lexer';
-import { AST, Place, Item, ItemType } from './types';
+import { AST, Place, Item, ItemType, CommentType } from './types';
 
 const TYPE_ANNOTATION_REGEX = /\.(input|button|checkbox|radio|link|dropdown)\b/g;
 const NAVIGATION_REGEX = /\s*=>\s*(.+)$/;
 const MULTIPLICITY_REGEX = /\s*\*(\d+)\s*/;
-const CONDITIONAL_REGEX = /^\(([^)]+)\)\s*/;
+const CONDITIONAL_REGEX = /^@(\S+)\s*/;
+const COMMENT_REGEX = /\s*\/\/\s*(.*)$/;
 
 export function parse(content: string): AST {
   const tokens = tokenize(content);
@@ -22,15 +23,30 @@ export function parse(content: string): AST {
         placeIndex.set(currentPlace.name, currentPlace);
       }
 
+      // Extract comment from place name
+      let placeName = token.value;
+      let placeComment: string | undefined;
+      let placeCommentType: CommentType | undefined;
+
+      const commentMatch = placeName.match(COMMENT_REGEX);
+      if (commentMatch) {
+        const parsed = parseCommentType(commentMatch[1]);
+        placeComment = parsed.text;
+        placeCommentType = parsed.type;
+        placeName = placeName.replace(COMMENT_REGEX, '').trim();
+      }
+
       const isModal =
-        token.value.toLowerCase().includes('(modal)') ||
-        token.value.toLowerCase().includes(' modal');
+        placeName.toLowerCase().includes('(modal)') ||
+        placeName.toLowerCase().includes(' modal');
 
       currentPlace = {
-        name: token.value,
+        name: placeName,
         items: [],
         line: token.line,
         isModal,
+        comment: placeComment,
+        commentType: placeCommentType,
       };
       itemStack = [];
     } else if (token.type === 'ITEM' && currentPlace) {
@@ -63,6 +79,18 @@ export function parse(content: string): AST {
   return { places, placeIndex };
 }
 
+function parseCommentType(commentText: string): { type: CommentType; text: string } {
+  const trimmed = commentText.trim();
+  if (trimmed.startsWith('?')) {
+    return { type: 'question', text: trimmed.slice(1).trim() };
+  } else if (trimmed.startsWith('!')) {
+    return { type: 'warning', text: trimmed.slice(1).trim() };
+  } else if (trimmed.startsWith('i ') || trimmed === 'i') {
+    return { type: 'info', text: trimmed.slice(1).trim() };
+  }
+  return { type: 'note', text: trimmed };
+}
+
 function parseItem(text: string, indent: number, line: number): Item {
   let label = text;
   let itemType: ItemType = 'text';
@@ -70,8 +98,19 @@ function parseItem(text: string, indent: number, line: number): Item {
   let multiplicity: number | undefined;
   let isConditional = false;
   let conditionalText: string | undefined;
+  let comment: string | undefined;
+  let commentType: CommentType | undefined;
 
-  // Check for conditional (show), (edit), etc.
+  // Extract comment first (before other parsing)
+  const commentMatch = label.match(COMMENT_REGEX);
+  if (commentMatch) {
+    const parsed = parseCommentType(commentMatch[1]);
+    comment = parsed.text;
+    commentType = parsed.type;
+    label = label.replace(COMMENT_REGEX, '');
+  }
+
+  // Check for conditional @show, @edit, etc.
   const conditionalMatch = label.match(CONDITIONAL_REGEX);
   if (conditionalMatch) {
     isConditional = true;
@@ -122,5 +161,7 @@ function parseItem(text: string, indent: number, line: number): Item {
     line,
     isConditional,
     conditionalText,
+    comment,
+    commentType,
   };
 }

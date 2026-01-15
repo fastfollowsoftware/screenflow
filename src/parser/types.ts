@@ -7,11 +7,15 @@ export type ItemType =
   | 'dropdown'
   | 'text';
 
+export type CommentType = 'question' | 'warning' | 'info' | 'note';
+
 export interface Place {
   name: string;
   items: Item[];
   line: number;
   isModal: boolean;
+  comment?: string;
+  commentType?: CommentType;
 }
 
 export interface Item {
@@ -24,6 +28,8 @@ export interface Item {
   line: number;
   isConditional: boolean;
   conditionalText?: string;
+  comment?: string;
+  commentType?: CommentType;
 }
 
 export interface AST {
@@ -36,4 +42,15 @@ export interface Token {
   value: string;
   line: number;
   indent: number;
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface CanvasState {
+  positions: Record<string, Position>;
+  zoom: number;
+  pan: Position;
 }

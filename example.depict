@@ -1,0 +1,79 @@
+Login
+  Email .input
+  Password .input
+  Login .button => Dashboard
+  Forgot Password? => Reset Password
+
+Reset Password
+  Enter your email to reset password
+  Email .input
+  Send Reset Link .button
+
+Dashboard
+  Welcome back!
+  Stats
+    Active Users
+    Total Orders
+    Revenue
+  Recent Orders
+    Order *3 => Order Details
+      #12345
+      John Smith
+      $299.00
+  New Order .button => New Order
+
+New Order
+  Customer Info
+    Name .input
+    Email .input
+    Phone .input
+  Items // ? Allow multiple items?
+    Product .dropdown
+    Quantity .input
+    Add Item .button
+  Notes .input
+  Submit .button => Confirm Order (modal)
+
+Confirm Order (modal)
+  Order created successfully!
+  Order #12346
+  View Order .button => Order Details
+  Close .button => Dashboard
+
+Order Details
+  Order #12345
+  Status // ! Needs status badges
+  Customer
+    John Smith
+    john@example.com
+  Items *2
+    Product Name
+    Qty: 2
+    $149.50
+  Total: $299.00
+  Edit .button
+  Cancel Order .button => Cancel Order (modal)
+
+Cancel Order (modal)
+  Are you sure you want to cancel this order?
+  This action cannot be undone.
+  Keep Order .button
+  Cancel Order .button
+
+Settings
+  Profile
+    Name .input
+    Email .input
+    Save .button
+  Preferences
+    [] Email notifications
+    [] Dark mode
+    Theme .dropdown
+  Danger Zone // ! Destructive actions
+    Delete Account .button => Delete Account (modal)
+
+Delete Account (modal)
+  This will permanently delete your account and all data.
+  Type "DELETE" to confirm .input
+  Cancel .button
+  Delete .button
